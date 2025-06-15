@@ -26,9 +26,9 @@ def gameover(screen: pg.Surface) -> None:
 
     sad_img = pg.image.load("fig/8.png")
     sad_img = pg.transform.rotozoom(sad_img, 0, 2.0)
-    left_sad_rct = sad_img.get_rect(center=(txt_rct.left - sad_img.get_width()//2 - 20, txt_rct.centery)) # テキストの左端から少し離して配置
+    left_sad_rct = sad_img.get_rect(center=(txt_rct.left - sad_img.get_width()//2 - 20, txt_rct.centery)) 
     screen.blit(sad_img, left_sad_rct)    
-    right_sad_rct = sad_img.get_rect(center=(txt_rct.right + sad_img.get_width()//2 + 20, txt_rct.centery)) # テキストの右端から少し離して配置
+    right_sad_rct = sad_img.get_rect(center=(txt_rct.right + sad_img.get_width()//2 + 20, txt_rct.centery)) 
     screen.blit(sad_img, right_sad_rct)
 
     pg.display.update()
@@ -43,6 +43,7 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
         bb_img.set_colorkey((0, 0, 0))
         bb_imgs.append(bb_img)
     return bb_imgs, bb_accs
+    
 def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
     original_img = pg.image.load("fig/3.png") 
     
@@ -72,14 +73,17 @@ def main():
     kk_img = get_kk_img((0, 0)) 
     kk_rct = kk_img.get_rect() 
     bb_imgs, bb_accs = init_bb_imgs()
-    bb_img = bb_imgs[0]
-    bb_rct = bb_img.get_rect()
     bb_img = pg.Surface((20, 20))
     pg.draw.circle(bb_img, (255, 0, 0), (10, 10), 10)
     bb_img.set_colorkey((0, 0, 0))
-    bb_rct = bb_img.get_rect()
-    bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
-    vx, vy = +5, +5
+    bombs = []
+    num_bombs = 10 
+    for i in range(num_bombs): 
+        bb_rct = bb_imgs[0].get_rect()
+        bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
+        vx = random.choice([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5]) 
+        vy = random.choice([-5, -4, -3, -2, -1, 1, 2, 3, 4, 5])
+        bombs.append({"rct": bb_rct, "vx": vx, "vy": vy})
     kk_rct.center = 300, 200
     clock = pg.time.Clock()
     tmr = 0
@@ -102,25 +106,36 @@ def main():
             if key_lst[k]:
                 sum_mv[0] += delta[0]
                 sum_mv[1] += delta[1]
-        kk_img = get_kk_img(tuple(sum_mv))
-        kk_rct.move_ip(sum_mv)
-        bb_img = bb_imgs[min(tmr // 500, 9)]
-        current_vx, current_vy = vx * bb_accs[min(tmr // 500, 9)], vy * bb_accs[min(tmr // 500, 9)] 
-        bb_rct.move_ip(current_vx, current_vy)
-        yoko, tate = check_bound(bb_rct)
-        if not yoko:
-            vx *= -1
-        if not tate:
-            vy *= -1
+        
+        kk_img = get_kk_img(tuple(sum_mv)) 
 
-        screen.blit(bb_img, bb_rct)
+        kk_rct.move_ip(sum_mv)
+        idx = min(tmr // 500, 9) 
+        current_bb_img = bb_imgs[idx] 
+        current_acc = bb_accs[idx]
+
+        for bomb in bombs: 
+            actual_vx = bomb["vx"] * current_acc
+            actual_vy = bomb["vy"] * current_acc
+            
+            bomb["rct"].move_ip(actual_vx, actual_vy)
+            
+            yoko, tate = check_bound(bomb["rct"])
+            if not yoko:
+                bomb["vx"] *= -1 # 速度を反転
+            if not tate:
+                bomb["vy"] *= -1
+            
+            screen.blit(current_bb_img, bomb["rct"])
+            
+            if kk_rct.colliderect(bomb["rct"]): 
+                gameover(screen)
+                return
+
         screen.blit(kk_img, kk_rct)
         pg.display.update()
         tmr += 1
         clock.tick(50)
-        if kk_rct.colliderect(bb_rct):
-            gameover(screen)
-            return
 
 
 
