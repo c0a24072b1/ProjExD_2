@@ -4,7 +4,13 @@ import sys
 import pygame as pg
 WIDTH, HEIGHT = 1100, 650
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
-
+def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
+    yoko, tate = True, True
+    if obj_rct.left < 0 or obj_rct.right > WIDTH:
+        yoko = False
+    if obj_rct.top < 0 or obj_rct.bottom > HEIGHT:
+        tate = False
+    return yoko, tate
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
@@ -42,6 +48,12 @@ def main():
                 sum_mv[1] += delta[1]
         kk_rct.move_ip(sum_mv)
         bb_rct.move_ip(vx, vy)
+        yoko, tate = check_bound(bb_rct)
+        if not yoko:
+            vx *= -1
+        if not tate:
+            vy *= -1
+
         screen.blit(bb_img, bb_rct)
         screen.blit(kk_img, kk_rct)
         pg.display.update()
