@@ -43,13 +43,34 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
         bb_img.set_colorkey((0, 0, 0))
         bb_imgs.append(bb_img)
     return bb_imgs, bb_accs
+def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
+    original_img = pg.image.load("fig/3.png") 
+    
+    kk_img_left = pg.transform.rotozoom(original_img, 0, 0.9)
+    kk_img_right = pg.transform.rotozoom(original_img, 0, 0.9)
+    kk_img_right = pg.transform.flip(kk_img_left, True, False) 
+
+    kk_imgs = {
+        (0, 0): kk_img_left, 
+        (+5, 0): kk_img_right, 
+        (-5, 0): kk_img_left,
+
+        (0, -5): pg.transform.rotozoom(kk_img_right, 90, 0.9),
+        (0, +5): pg.transform.rotozoom(kk_img_right, -90, 0.9), 
+        
+        (+5, -5): pg.transform.rotozoom(kk_img_right, 45, 0.9), 
+        (-5, -5): pg.transform.rotozoom(kk_img_left, -45, 0.9),
+        (+5, +5): pg.transform.rotozoom(kk_img_right,-45, 0.9),
+        (-5, +5): pg.transform.rotozoom(kk_img_left, 45, 0.9), 
+    }
+    return kk_imgs.get(sum_mv, kk_imgs[(0, 0)])
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load("fig/pg_bg.jpg")    
-    kk_img = pg.transform.rotozoom(pg.image.load("fig/3.png"), 0, 0.9)
-    kk_rct = kk_img.get_rect()
+    kk_img = get_kk_img((0, 0)) 
+    kk_rct = kk_img.get_rect() 
     bb_imgs, bb_accs = init_bb_imgs()
     bb_img = bb_imgs[0]
     bb_rct = bb_img.get_rect()
@@ -81,6 +102,7 @@ def main():
             if key_lst[k]:
                 sum_mv[0] += delta[0]
                 sum_mv[1] += delta[1]
+        kk_img = get_kk_img(tuple(sum_mv))
         kk_rct.move_ip(sum_mv)
         bb_img = bb_imgs[min(tmr // 500, 9)]
         current_vx, current_vy = vx * bb_accs[min(tmr // 500, 9)], vy * bb_accs[min(tmr // 500, 9)] 
