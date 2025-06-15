@@ -1,4 +1,5 @@
 import random
+import time
 import os
 import sys
 import pygame as pg
@@ -11,6 +12,28 @@ def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
     if obj_rct.top < 0 or obj_rct.bottom > HEIGHT:
         tate = False
     return yoko, tate
+
+def gameover(screen: pg.Surface) -> None:
+    ovl = pg.Surface((WIDTH, HEIGHT))
+    ovl.set_alpha(200)
+    ovl.fill((0, 0, 0))
+    screen.blit(ovl, (0, 0))
+
+    font = pg.font.Font(None, 80)
+    txt = font.render("Game Over", True, (255 ,255, 255))
+    txt_rct = txt.get_rect(center=(WIDTH//2, HEIGHT//2 - 40))
+    screen.blit(txt, (WIDTH//2 - 150, HEIGHT//2 - 40))
+
+    sad_img = pg.image.load("fig/8.png")
+    sad_img = pg.transform.rotozoom(sad_img, 0, 2.0)
+    left_sad_rct = sad_img.get_rect(center=(txt_rct.left - sad_img.get_width()//2 - 20, txt_rct.centery)) # テキストの左端から少し離して配置
+    screen.blit(sad_img, left_sad_rct)    
+    right_sad_rct = sad_img.get_rect(center=(txt_rct.right + sad_img.get_width()//2 + 20, txt_rct.centery)) # テキストの右端から少し離して配置
+    screen.blit(sad_img, right_sad_rct)
+
+    pg.display.update()
+    time.sleep(5)
+
 
 def main():
     pg.display.set_caption("逃げろ！こうかとん")
@@ -60,6 +83,7 @@ def main():
         tmr += 1
         clock.tick(50)
         if kk_rct.colliderect(bb_rct):
+            gameover(screen)
             return
 
 
