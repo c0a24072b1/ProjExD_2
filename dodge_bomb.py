@@ -77,12 +77,12 @@ def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
         (0, 0): kk_img_left, 
         (+5, 0): kk_img_right, 
         (-5, 0): kk_img_left,
-        (0, -5): pg.transform.rotozoom(kk_img_right, 90, 1.0),
-        (0, +5): pg.transform.rotozoom(kk_img_right, -90, 1.0), 
-        (+5, -5): pg.transform.rotozoom(kk_img_right, 45, 1.0), 
-        (-5, -5): pg.transform.rotozoom(kk_img_left, -45, 1.0),
-        (+5, +5): pg.transform.rotozoom(kk_img_right,-45, 1.0),
-        (-5, +5): pg.transform.rotozoom(kk_img_left, 45, 1.0), 
+        (0, -5): pg.transform.rotozoom(kk_img_right, 90, 1.0),#上向き
+        (0, +5): pg.transform.rotozoom(kk_img_right, -90, 1.0), #下向き
+        (+5, -5): pg.transform.rotozoom(kk_img_right, 45, 1.0), #右上
+        (-5, -5): pg.transform.rotozoom(kk_img_left, -45, 1.0),#左上
+        (+5, +5): pg.transform.rotozoom(kk_img_right,-45, 1.0),#右下
+        (-5, +5): pg.transform.rotozoom(kk_img_left, 45, 1.0), #左下
     }
     return kk_imgs.get(sum_mv, kk_img_left)
 
@@ -124,6 +124,7 @@ def main() -> None:
     bb_imgs, bb_accs = init_bb_imgs()
     bombs = []
     num_bombs = 1
+    #爆弾の大きさ
     for i in range(num_bombs): 
         bb_rct = bb_imgs[0].get_rect()
         bb_rct.center = random.randint(0, WIDTH), random.randint(0, HEIGHT)
@@ -165,16 +166,18 @@ def main() -> None:
         current_bb_img = bb_imgs[idx] 
         current_acc = bb_accs[idx]
 
-        for bomb in bombs: 
+        for bomb in bombs:
+            #爆弾の加速度 
             vx, vy = calc_orientation(bomb["rct"], kk_rct, (bomb["vx"], bomb["vy"]))
             bomb["vx"], bomb["vy"] = vx, vy
-
+            #正規化
             base_speed = math.sqrt(50)
             actual_vx = bomb["vx"] * base_speed * current_acc
             actual_vy = bomb["vy"] * base_speed * current_acc
             
             bomb["rct"].move_ip(actual_vx, actual_vy)
             
+            #爆弾の加速度の計算
             yoko, tate = check_bound(bomb["rct"])
             if not yoko:
                 bomb["vx"] *= -1
@@ -183,6 +186,7 @@ def main() -> None:
             
             screen.blit(current_bb_img, bomb["rct"])
             
+            # ゲームオーバー
             if kk_rct.colliderect(bomb["rct"]): 
                 gameover(screen)
                 return
