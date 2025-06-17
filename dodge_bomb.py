@@ -36,6 +36,11 @@ def gameover(screen: pg.Surface) -> None:
     time.sleep(5)
 
 def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
+    """
+    爆弾の画像のリストと、加速度のリストを初期化して返す
+    戻り値：
+        (爆弾画像のリスト, 加速度のリスト) のタプル
+    """
     bb_accs = [a for a in range(1, 11)]
     bb_imgs = []
     for r in range(1, 11):
@@ -46,6 +51,13 @@ def init_bb_imgs() -> tuple[list[pg.Surface], list[int]]:
     return bb_imgs, bb_accs
     
 def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
+    """
+    移動量の合計に応じて、適切な向きのこうかとん画像を返す
+    引数：
+        sum_mv: 移動量のx,y合計値タプル
+    戻り値：
+        回転・反転されたこうかとんのSurface
+    """
     original_img = pg.image.load("fig/3.png") 
     kk_img_left = pg.transform.rotozoom(original_img, 0, 0.9)
     kk_img_right = pg.transform.flip(kk_img_left, True, False) 
@@ -64,8 +76,14 @@ def get_kk_img(sum_mv: tuple[int, int]) -> pg.Surface:
 
 def calc_orientation(org_rct: pg.Rect, dst_rct: pg.Rect, current_speed: tuple[float, float]) -> tuple[float, float]:
     """
-    爆弾RectからこうかとんRectへの方向ベクトルを計算する。
+    爆弾からこうかとんへの方向ベクトルを計算する。
     距離が300未満の場合は、慣性を優先し現在の速度を維持する。
+    引数：
+        org_rct: 爆弾のRect
+        dst_rct: こうかとんのRect
+        current_vel: 爆弾の現在の速度ベクトル
+    戻り値：
+        新しい速度ベクトル
     """
     diff_x = dst_rct.centerx - org_rct.centerx
     diff_y = dst_rct.centery - org_rct.centery
@@ -81,6 +99,9 @@ def calc_orientation(org_rct: pg.Rect, dst_rct: pg.Rect, current_speed: tuple[fl
     return diff_x / norm, diff_y / norm
 
 def main() -> None:
+    """
+    ゲームのメイン処理
+    """
     pg.display.set_caption("逃げろ！こうかとん")
     screen = pg.display.set_mode((WIDTH, HEIGHT))
     bg_img = pg.image.load("fig/pg_bg.jpg")     
