@@ -10,6 +10,13 @@ WIDTH, HEIGHT = 1100, 650
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
+    """
+    オブジェクトが画面内にいるか、画面外にいるかを判定する
+    引数：
+        obj_rct: 判定対象のRectオブジェクト (こうかとん or 爆弾)
+    戻り値：
+        (横方向判定, 縦方向判定) のタプル (画面内:True / 画面外:False)
+    """
     yoko, tate = True, True
     if obj_rct.left < 0 or obj_rct.right > WIDTH:
         yoko = False
@@ -18,6 +25,11 @@ def check_bound(obj_rct: pg.Rect) -> tuple[bool, bool]:
     return yoko, tate
 
 def gameover(screen: pg.Surface) -> None:
+    """
+    ゲームオーバー画面を表示し、5秒後にゲームを終了する
+    引数：
+        screen: 描画対象のSurface
+    """
     ovl = pg.Surface((WIDTH, HEIGHT))
     ovl.set_alpha(200)
     ovl.fill((0, 0, 0))
